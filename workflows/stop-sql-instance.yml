@@ -10,6 +10,6 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
-          project_id: tu-proyecto-id
+          project_id: learned-maker-459200-v6
       - name: Stop SQL instance
-        run: gcloud sql instances patch tu-instancia-sql --activation-policy NEVER
+        run: gcloud sql instances patch mi-instancia-sql --activation-policy NEVER
