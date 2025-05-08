@@ -2,8 +2,8 @@ name: Start SQL
 
 on:
   schedule:
-    - cron: '0 11 * * *'  # 8AM Argentina (UTC+3)
-  workflow_dispatch:      # Permite ejecutarlo manualmente desde GitHub
+    - cron: '20 21 * * *'  # 00:20 AM hora Buenos Aires (UTC+3)
+  workflow_dispatch:
 
 jobs:
   start-sql:
@@ -20,4 +20,5 @@ jobs:
 
       - name: Start SQL instance
         run: gcloud sql instances patch mi-instancia-sql --activation-policy=ALWAYS
+
 
