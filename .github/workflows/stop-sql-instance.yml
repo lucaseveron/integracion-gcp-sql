@@ -19,6 +19,6 @@ jobs:
         with:
           project_id: learned-maker-459200
       - run: |
-          gcloud sql instances patch mi-instancia-sql --activation-policy=NEVER
+          gcloud sql instances patch mi-instancia-sql --activation-policy=ALWAYS
           gcloud sql instances stop mi-instancia-sql
 
