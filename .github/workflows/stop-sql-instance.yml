@@ -1,7 +1,9 @@
 name: stop-sql-instance
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   stop-instance:
@@ -19,3 +21,4 @@ jobs:
       - run: |
           gcloud sql instances patch mi-instancia-sql --activation-policy=NEVER
           gcloud sql instances stop mi-instancia-sql
+
