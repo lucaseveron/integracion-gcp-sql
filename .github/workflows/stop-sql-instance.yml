@@ -1,0 +1,24 @@
+name: stop-sql-instance
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  stop-instance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Autenticarse con GCP"
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: "Detener instancia Cloud SQL"
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: learned-maker-459200
+      - run: |
+          gcloud sql instances patch mi-instancia-sql --activation-policy=NEVER
+          gcloud sql instances stop mi-instancia-sql
+
