@@ -1,0 +1,32 @@
+name: Stop SQL Instance
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Ejecuta a las 00:00 UTC (21:00 Argentina)
+  workflow_dispatch:
+
+jobs:
+  stop-instance:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - name: Auth
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+        service_account: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
+
+    - name: Set up gcloud
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        install_components: 'beta'
+
+    - name: Turn SQL instance OFF
+      run: |
+        gcloud sql instances patch mi-instancia-sql --activation-policy=NEVER
+
+
