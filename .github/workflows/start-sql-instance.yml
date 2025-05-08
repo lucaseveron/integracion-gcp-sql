@@ -1,14 +1,15 @@
-name: stop-sql-instance
+name: Start SQL Instance
 
 on:
   push:
     branches:
       - main
       
+  workflow_dispatch:
   schedule:
-    - cron: '0 1 * * *'  # 01:00 UTC = 22:00 Argentina
+    - cron: '0 11 * * *'
 jobs:
-  stop-sql:
+  start-sql:
     runs-on: ubuntu-latest
     steps:
       - name: Setup gcloud
@@ -16,6 +17,5 @@ jobs:
         with:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           project_id: learned-maker-459200
-      - name: Stop SQL instance
-        run: gcloud sql instances patch mi-instancia-sql --activation-policy NEVER
-
+      - name: Start SQL instance
+        run: gcloud sql instances start mi-instancia-sql
