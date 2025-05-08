@@ -1,0 +1,15 @@
+name: Start SQL Instance
+on:
+  schedule:
+    - cron: '0 11 * * *'  # 11:00 UTC = 08:00 Argentina
+jobs:
+  start-sql:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: tu-proyecto-id
+      - name: Start SQL instance
+        run: gcloud sql instances start tu-instancia-sql
