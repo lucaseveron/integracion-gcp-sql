@@ -1,23 +1,36 @@
-name: Start SQL
+name: Start and Ensure SQL Instance Always Active
 
 on:
   schedule:
-    - cron: '0 11 * * *'  # 8AM Argentina (UTC+3)
-  workflow_dispatch:      # Permite ejecutarlo manualmente desde GitHub
+    - cron: '0 11 * * *'  # 8:00 AM Argentina (UTC-3)
+  workflow_dispatch:      # Allows manual triggering from GitHub
 
 jobs:
   start-sql:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: 'google-github-actions/auth@v2'
+      - name: Authenticate to Google Cloud
+        uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - uses: 'google-github-actions/setup-gcloud@v2'
+      - name: Set up Google Cloud CLI
+        uses: 'google-github-actions/setup-gcloud@v2'
         with:
           project_id: 'learned-maker-459200-v6'
 
-      - name: Start SQL instance
-        run: gcloud sql instances patch mi-instancia-sql --activation-policy=ALWAYS
+      - name: Ensure SQL Instance is Always Active
+        run: |
+          INSTANCE_NAME="mi-instancia-sql"
+          PROJECT_ID="learned-maker-459200-v6"
+          echo "Checking current activation policy for instance: $INSTANCE_NAME in project: $PROJECT_ID"
+          current_policy=$(gcloud sql instances describe "$INSTANCE_NAME" --project="$PROJECT_ID" --format="value(settings.activationPolicy)")
+          echo "Current activation policy: $current_policy"
+          if [ "$current_policy" != "ALWAYS" ]; then
+            echo "Activation policy is not ALWAYS. Updating..."
+            gcloud sql instances patch "$INSTANCE_NAME" --project="$PROJECT_ID" --activation-policy=ALWAYS
+            echo "Successfully set activation policy to ALWAYS."
+          else
+            echo "Activation policy is already ALWAYS. No update needed."
+          fi
 
