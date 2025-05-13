@@ -22,7 +22,7 @@ jobs:
       - name: Stop SQL Instance 1
         run: |
           INSTANCE_NAME="mi-instancia" # Reemplaza con el nombre de tu primera instancia
-          PROJECT_ID="TU_PROYECTO_ID" # Reemplaza con tu ID de proyecto
+          PROJECT_ID="learned-maker-459200-v6" # Reemplaza con tu ID de proyecto
           echo "Attempting to stop instance: $INSTANCE_NAME"
           gcloud sql instances patch "$INSTANCE_NAME" --activation-policy=NEVER
           echo "Successfully requested stop for instance: $INSTANCE_NAME"
@@ -30,7 +30,7 @@ jobs:
       - name: Stop SQL Instance 2
         run: |
           INSTANCE_NAME="instancia-sql-2" # Reemplaza con el nombre de tu segunda instancia
-          PROJECT_ID="TU_PROYECTO_ID" # Reemplaza con tu ID de proyecto
+          PROJECT_ID="learned-maker-459200-v6" # Reemplaza con tu ID de proyecto
           echo "Attempting to stop instance: $INSTANCE_NAME"
           gcloud sql instances patch "$INSTANCE_NAME" --activation-policy=NEVER
           echo "Successfully requested stop for instance: $INSTANCE_NAME"

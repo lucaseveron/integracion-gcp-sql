@@ -22,7 +22,7 @@ jobs:
       - name: Ensure SQL Instance 1 is Always Active
         run: |
           INSTANCE_NAME="mi-instancia-sql" # Reemplaza con el nombre de tu primera instancia
-          PROJECT_ID="TU_PROYECTO_ID" # Reemplaza con tu ID de proyecto
+          PROJECT_ID="learned-maker-459200-v6" # Reemplaza con tu ID de proyecto
           echo "Checking/Ensuring activation policy for instance: $INSTANCE_NAME"
           current_policy=$(gcloud sql instances describe "$INSTANCE_NAME" --project="$PROJECT_ID" --format="value(settings.activationPolicy)")
           if [ "$current_policy" != "ALWAYS" ]; then
@@ -36,7 +36,7 @@ jobs:
       - name: Ensure SQL Instance 2 is Always Active
         run: |
           INSTANCE_NAME="instancia-sql-2" # Reemplaza con el nombre de tu segunda instancia
-          PROJECT_ID="TU_PROYECTO_ID" # Reemplaza con tu ID de proyecto
+          PROJECT_ID="learned-maker-459200-v6" # Reemplaza con tu ID de proyecto
           echo "Checking/Ensuring activation policy for instance: $INSTANCE_NAME"
           current_policy=$(gcloud sql instances describe "$INSTANCE_NAME" --project="$PROJECT_ID" --format="value(settings.activationPolicy)")
           if [ "$current_policy" != "ALWAYS" ]; then
