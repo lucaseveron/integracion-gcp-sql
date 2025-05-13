@@ -1,12 +1,24 @@
-name: Start and Ensure SQL Instance Always Active
+name: Manage SQL Instances (Ensure Active and Scheduled Shutdown)
 
 on:
   schedule:
-    - cron: '0 11 * * *'  # 8:00 AM Argentina (UTC-3)
+    - cron: '0 11 * * *'  # 8:00 AM Argentina (UTC-3) - Para la verificación de actividad
+    - cron: '0 23 * * 5,6' # 8:00 PM Argentina (UTC-3) los sábados y domingos - Para el apagado
   workflow_dispatch:      # Allows manual triggering from GitHub
+    inputs:
+      instance_name:
+        description: 'Nombre de la instancia SQL a verificar/encender (manual)'
+        required: false
+      action:
+        description: 'Acción manual a realizar (check-active o ensure-active)'
+        type: choice
+        options:
+          - check-active
+          - ensure-active
+        required: false
 
 jobs:
-  start-sql:
+  ensure-sql-active:
     runs-on: ubuntu-latest
     steps:
       - name: Authenticate to Google Cloud
@@ -19,18 +31,79 @@ jobs:
         with:
           project_id: 'learned-maker-459200-v6'
 
-      - name: Ensure SQL Instance is Always Active
+      - name: Ensure SQL Instance 1 is Always Active
         run: |
-          INSTANCE_NAME="mi-instancia-sql"
+          INSTANCE_NAME="mi-instancia-sql" # Cambia al nombre de tu primera instancia
           PROJECT_ID="learned-maker-459200-v6"
-          echo "Checking current activation policy for instance: $INSTANCE_NAME in project: $PROJECT_ID"
+          echo "Checking/Ensuring activation policy for instance: $INSTANCE_NAME in project: $PROJECT_ID"
           current_policy=$(gcloud sql instances describe "$INSTANCE_NAME" --project="$PROJECT_ID" --format="value(settings.activationPolicy)")
-          echo "Current activation policy: $current_policy"
+          echo "Current activation policy for $INSTANCE_NAME: $current_policy"
           if [ "$current_policy" != "ALWAYS" ]; then
-            echo "Activation policy is not ALWAYS. Updating..."
+            echo "Activation policy for $INSTANCE_NAME is not ALWAYS. Updating..."
             gcloud sql instances patch "$INSTANCE_NAME" --project="$PROJECT_ID" --activation-policy=ALWAYS
-            echo "Successfully set activation policy to ALWAYS."
+            echo "Successfully set activation policy for $INSTANCE_NAME to ALWAYS."
           else
-            echo "Activation policy is already ALWAYS. No update needed."
+            echo "Activation policy for $INSTANCE_NAME is already ALWAYS. No update needed."
           fi
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.instance_name == 'mi-instancia-sql-1' && github.event.inputs.action == 'ensure-active')
 
+      - name: Ensure SQL Instance 2 is Always Active
+        run: |
+          INSTANCE_NAME="instancia-sql-2" # Cambia al nombre de tu segunda instancia
+          PROJECT_ID="learned-maker-459200-v6"
+          echo "Checking/Ensuring activation policy for instance: $INSTANCE_NAME in project: $PROJECT_ID"
+          current_policy=$(gcloud sql instances describe "$INSTANCE_NAME" --project="$PROJECT_ID" --format="value(settings.activationPolicy)")
+          echo "Current activation policy for $INSTANCE_NAME: $current_policy"
+          if [ "$current_policy" != "ALWAYS" ]; then
+            echo "Activation policy for $INSTANCE_NAME is not ALWAYS. Updating..."
+            gcloud sql instances patch "$INSTANCE_NAME" --project="$PROJECT_ID" --activation-policy=ALWAYS
+            echo "Successfully set activation policy for $INSTANCE_NAME to ALWAYS."
+          else
+            echo "Activation policy for $INSTANCE_NAME is already ALWAYS. No update needed."
+          fi
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.instance_name == 'mi-otra-instancia-sql' && github.event.inputs.action == 'ensure-active')
+
+  stop-sql-instances:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set up Google Cloud CLI
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          project_id: 'learned-maker-459200-v6'
+
+      - name: Stop SQL Instance 1 (if active)
+        run: |
+          INSTANCE_NAME="mi-instancia-sql" # Asegúrate de usar el mismo nombre
+          PROJECT_ID="learned-maker-459200-v6"
+          echo "Checking current state of instance: $INSTANCE_NAME"
+          current_state=$(gcloud sql instances describe "$INSTANCE_NAME" --project="$PROJECT_ID" --format="value(state)")
+          echo "Current state of $INSTANCE_NAME: $current_state"
+          if [ "$current_state" == "RUNNABLE" ]; then
+            echo "Stopping instance: $INSTANCE_NAME"
+            gcloud sql instances patch "$INSTANCE_NAME" --project="$PROJECT_ID" --activation-policy=NEVER
+            echo "Successfully set activation policy to NEVER for $INSTANCE_NAME (instance will stop)."
+          else
+            echo "Instance $INSTANCE_NAME is not RUNNABLE, no need to stop."
+          fi
+        if: github.event_name == 'schedule'
+
+      - name: Stop SQL Instance 2 (if active)
+        run: |
+          INSTANCE_NAME="instancia-sql-2" # Asegúrate de usar el mismo nombre
+          PROJECT_ID="learned-maker-459200-v6"
+          echo "Checking current state of instance: $INSTANCE_NAME"
+          current_state=$(gcloud sql instances describe "$INSTANCE_NAME" --project="$PROJECT_ID" --format="value(state)")
+          echo "Current state of $INSTANCE_NAME: $current_state"
+          if [ "$current_state" == "RUNNABLE" ]; then
+            echo "Stopping instance: $INSTANCE_NAME"
+            gcloud sql instances patch "$INSTANCE_NAME" --project="$PROJECT_ID" --activation-policy=NEVER
+            echo "Successfully set activation policy to NEVER for $INSTANCE_NAME (instance will stop)."
+          else
+            echo "Instance $INSTANCE_NAME is not RUNNABLE, no need to stop."
+          fi
+        if: github.event_name == 'schedule'
