@@ -19,14 +19,19 @@ jobs:
         with:
           project_id: 'learned-maker-459200-v6'
 
-      - name: Stop All SQL Instances
+      - name: Stop All SQL Instances If Running
         run: |
           PROJECT_ID="learned-maker-459200-v6"
-          INSTANCES=("mi-instancia-sql" "instancia-sql-2") # Agregá más instancias si necesitás
+          INSTANCES=("mi-instancia-sql" "instancia-sql-2")
 
           for INSTANCE_NAME in "${INSTANCES[@]}"; do
-            echo "Attempting to stop instance: $INSTANCE_NAME"
-            gcloud sql instances patch "$INSTANCE_NAME" --project="$PROJECT_ID" --activation-policy=NEVER
-            echo "Successfully requested stop for instance: $INSTANCE_NAME"
+            echo "Checking state of $INSTANCE_NAME..."
+            STATE=$(gcloud sql instances describe "$INSTANCE_NAME" --project="$PROJECT_ID" --format="value(state)")
+            if [ "$STATE" == "RUNNABLE" ]; then
+              echo "Instance $INSTANCE_NAME is running. Stopping..."
+              gcloud sql instances patch "$INSTANCE_NAME" --project="$PROJECT_ID" --activation-policy=NEVER
+              echo "Instance $INSTANCE_NAME set to NEVER (stopped)."
+            else
+              echo "Instance $INSTANCE_NAME is already stopped. Skipping."
+            fi
           done
-
