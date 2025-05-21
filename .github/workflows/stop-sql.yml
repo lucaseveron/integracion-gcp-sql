@@ -17,21 +17,16 @@ jobs:
       - name: Set up Google Cloud CLI
         uses: 'google-github-actions/setup-gcloud@v2'
         with:
-          project_id: 'learned-maker-459200-v6' # Reemplaza con tu ID de proyecto
+          project_id: 'learned-maker-459200-v6'
 
-      - name: Stop SQL Instance 1
+      - name: Stop All SQL Instances
         run: |
-          INSTANCE_NAME="mi-instancia-sql" # Reemplaza con el nombre de tu primera instancia
-          PROJECT_ID="learned-maker-459200-v6" # Reemplaza con tu ID de proyecto
-          echo "Attempting to stop instance: $INSTANCE_NAME"
-          gcloud sql instances patch "$INSTANCE_NAME" --activation-policy=NEVER
-          echo "Successfully requested stop for instance: $INSTANCE_NAME"
+          PROJECT_ID="learned-maker-459200-v6"
+          INSTANCES=("mi-instancia-sql" "instancia-sql-2") # Agregá más instancias si necesitás
 
-      - name: Stop SQL Instance 2
-        run: |
-          INSTANCE_NAME="instancia-sql-2" # Reemplaza con el nombre de tu segunda instancia
-          PROJECT_ID="learned-maker-459200-v6" # Reemplaza con tu ID de proyecto
-          echo "Attempting to stop instance: $INSTANCE_NAME"
-          gcloud sql instances patch "$INSTANCE_NAME" --activation-policy=NEVER
-          echo "Successfully requested stop for instance: $INSTANCE_NAME"
+          for INSTANCE_NAME in "${INSTANCES[@]}"; do
+            echo "Attempting to stop instance: $INSTANCE_NAME"
+            gcloud sql instances patch "$INSTANCE_NAME" --project="$PROJECT_ID" --activation-policy=NEVER
+            echo "Successfully requested stop for instance: $INSTANCE_NAME"
+          done
 
